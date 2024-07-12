@@ -19,6 +19,7 @@ return new class extends Migration
             $table->longText('state_description');
             $table->string('reporter_name');
             $table->foreignId('period_id')->constrained('periods')->cascadeOnDelete();
+            $table->foreignId('site_id')->constrained('sites')->cascadeOnDelete();
             $table->timestamps();
         });
     }

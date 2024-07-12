@@ -15,4 +15,9 @@ class Site extends Model
     {
         return $this->hasMany(Period::class);
     }
+
+    public function reports()
+    {
+        return $this->hasMany(Report::class);
+    }
 }

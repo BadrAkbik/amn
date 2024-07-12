@@ -15,4 +15,8 @@ class Report extends Model
     {
         return $this->belongsTo(Period::class, 'period_id');
     }
+    public function site()
+    {
+        return $this->belongsTo(Site::class, 'site_id');
+    }
 }

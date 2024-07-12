@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable();
             $table->time('from');
-            $table->time('to')->nullable();
+            $table->time('to');
             $table->foreignId('site_id')->constrained('sites')->cascadeOnDelete();
             $table->timestamps();
         });
