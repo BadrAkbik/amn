@@ -58,6 +58,7 @@ return [
     'address' => 'العنوان',
     'reporter_name' => 'معد التقرير',
     'time' => 'الوقت',
-    'state_description' => 'شرح الحالة'
+    'state_description' => 'شرح الحالة',
+    'print' => 'طباعة'
 
 ];

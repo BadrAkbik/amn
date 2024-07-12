@@ -19,4 +19,9 @@ class Report extends Model
     {
         return $this->belongsTo(Site::class, 'site_id');
     }
+
+    public function reporter()
+    {
+        return $this->belongsTo(User::class, 'reporter_id');
+    }
 }

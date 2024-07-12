@@ -46,6 +46,11 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id');
     }
 
+    public function report()
+    {
+        return $this->hasMany(Report::class, 'reporter_id');
+    }
+
     public function hasPermission($permission)
     {
         if ($this->role->name === 'owner') {

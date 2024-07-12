@@ -6,6 +6,7 @@ use App\Filament\Resources\ReportResource\Pages;
 use App\Models\Period;
 use App\Models\Report;
 use App\Models\Site;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Filament\Forms\Components\DatePicker;
@@ -58,30 +59,35 @@ class ReportResource extends Resource
                     ->label(__('attributes.time'))
                     ->seconds(false)
                     ->required(),
-                TextInput::make('reporter_name')
+                Select::make('reporter_id')
                     ->label(__('attributes.reporter_name'))
                     ->required()
-                    ->maxLength(255),
+                    ->relationship('reporter', 'id')
+                    ->exists('users', 'id')
+                    ->live()
+                    ->preload()
+                    ->getOptionLabelFromRecordUsing(fn (User $record) => "{$record->name}"),
+                    Select::make('period_id')
+                        ->label(__('attributes.period'))
+                        ->required()
+                        ->relationship('period', 'id')
+                        ->exists('periods', 'id')
+                        ->live()
+                        ->preload()
+                        ->getOptionLabelFromRecordUsing(fn (Period $record) => "{$record->name}, {$record->from}, {$record->to}"),
+                    Select::make('site_id')
+                        ->label(__('attributes.site'))
+                        ->required()
+                        ->relationship('site')
+                        ->exists('sites', 'id')
+                        ->live()
+                        ->preload()
+                        ->getOptionLabelFromRecordUsing(fn (Site $record) => "{$record->name}"),
                 Textarea::make('state_description')
                     ->label(__('attributes.state_description'))
                     ->required()
+                    ->rows(20)
                     ->columnSpanFull(),
-                Select::make('period_id')
-                    ->label(__('attributes.period'))
-                    ->required()
-                    ->relationship('period', 'id')
-                    ->exists('periods', 'id')
-                    ->live()
-                    ->preload()
-                    ->getOptionLabelFromRecordUsing(fn (Period $record) => "{$record->name}, {$record->from}, {$record->to}"),
-                Select::make('site_id')
-                    ->label(__('attributes.site'))
-                    ->required()
-                    ->relationship('site')
-                    ->exists('sites', 'id')
-                    ->live()
-                    ->preload()
-                    ->getOptionLabelFromRecordUsing(fn (Site $record) => "{$record->name}")
             ]);
     }
 
@@ -98,7 +104,7 @@ class ReportResource extends Resource
                     ->sortable(),
                 TextColumn::make('time')
                     ->label(__('attributes.time')),
-                TextColumn::make('reporter_name')
+                TextColumn::make('reporter.name')
                     ->label(__('attributes.reporter_name'))
                     ->searchable(),
                 TextColumn::make('site.name')
@@ -127,7 +133,13 @@ class ReportResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('pdf')
+                Tables\Actions\Action::make('print')
+                    ->label(__('attributes.print'))
+                    ->color('success')
+                    ->icon('heroicon-o-printer')
+                    ->url(fn (Report $report) => route('print', $report))
+                    ->openUrlInNewTab(),
+                /*                 Tables\Actions\Action::make('pdf')
                     ->label('PDF')
                     ->color('success')
                     ->icon('heroicon-s-arrow-down-tray')
@@ -135,7 +147,7 @@ class ReportResource extends Resource
                         return response()->streamDownload(function () use ($record) {
                             return PDF::view('pdf', ['record' => $record])->save($record->site->name . '.pdf');
                         });
-                    }),
+                    }), */
                 /* Tables\Actions\Action::make('pdf')
                     ->label('PDF')
                     ->color('success')
