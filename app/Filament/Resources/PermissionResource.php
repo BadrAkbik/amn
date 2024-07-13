@@ -47,8 +47,7 @@ class PermissionResource extends Resource
                     ->preload()
                     ->exists('roles', 'id')
                     ->options(Role::whereNot('name', 'owner')->pluck('name', 'id'))
-                    ->searchable()
-                    ->required(),
+                    ->searchable(),
             ]);
     }
 
