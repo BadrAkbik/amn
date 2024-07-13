@@ -51,6 +51,16 @@ class User extends Authenticatable
         return $this->hasMany(Report::class, 'reporter_id');
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            $role_id = Role::firstOrCreate(['name' => 'user'])->id;
+            $user->role_id = $role_id;
+        });
+    }
+
     public function hasPermission($permission)
     {
         if ($this->role->name === 'owner') {

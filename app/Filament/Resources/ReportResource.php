@@ -19,9 +19,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Blade;
 
-use function Spatie\LaravelPdf\Support\pdf;
 
 class ReportResource extends Resource
 {
@@ -138,6 +136,7 @@ class ReportResource extends Resource
                     ->color('success')
                     ->icon('heroicon-o-printer')
                     ->url(fn (Report $report) => route('print', $report))
+                    ->visible(auth()->user()->hasPermission('report.print'))
                     ->openUrlInNewTab(),
                 /*                 Tables\Actions\Action::make('pdf')
                     ->label('PDF')

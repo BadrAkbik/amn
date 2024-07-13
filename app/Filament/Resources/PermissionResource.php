@@ -43,6 +43,7 @@ class PermissionResource extends Resource
                     ->relationship('roles', 'id')
                     ->multiple()
                     ->live()
+                    ->notIn(Role::firstWhere('name', 'owner')->id)
                     ->preload()
                     ->exists('roles', 'id')
                     ->options(Role::whereNot('name', 'owner')->pluck('name', 'id'))

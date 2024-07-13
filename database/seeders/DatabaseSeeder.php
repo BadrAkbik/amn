@@ -17,16 +17,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $role_id = Role::firstOrCreate(['name' => 'owner'])->id;
-/*         Role::firstOrCreate(['name' => 'user']);
-        Role::firstOrCreate(['name' => 'admin']); */
+        Role::firstOrCreate(['name' => 'user']);
+        Role::firstOrCreate(['name' => 'admin']);
 
-/*         $permissions = include base_path('data/permissions.php');
+        $permissions = include base_path('data/permissions.php');
         foreach ($permissions as $key => $value) {
             Permission::firstOrCreate([
                 'name' => $key,
                 'name_ar' => $value,
             ]);
-        } */
+        }
         $user = User::where('email', 'admin@admin.com')->first();
         if (!$user) {
             User::create([

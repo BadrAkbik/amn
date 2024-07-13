@@ -41,12 +41,12 @@ class UserResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return $record->role->name !== 'owner';
+        return $record->role->name !== 'owner' && auth()->user()->hasPermission('user.update');
     }
 
     public static function canDelete($record): bool
     {
-        return $record->role->name !== 'owner';
+        return $record->role->name !== 'owner' && auth()->user()->hasPermission('user.delete');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
@@ -60,15 +60,6 @@ class UserResource extends Resource
                     ->minLength(2)->maxLength(15)->string()
                     ->required()
                     ->maxLength(255),
-                TextInput::make('username')
-                    ->label(__('attributes.username'))
-                    ->required()
-                    ->regex('/^[a-zA-Z0-9]{5,14}$/')
-                    ->validationMessages([
-                        'regex' => __('authpage.The username must be between 6 to 14 characters and contain only letters and numbers.'),
-                    ])
-                    ->unique(User::class, 'username', ignoreRecord: true)
-                    ->maxLength(255),
                 TextInput::make('email')
                     ->label(__('attributes.email'))
                     ->email()
@@ -76,7 +67,7 @@ class UserResource extends Resource
                     ->required()
                     ->maxLength(255),
                 TextInput::make('phone_num')
-                    ->label(__('attributes.phone_num'))
+                    ->label(__('attributes.phone_number'))
                     ->tel()
                     ->maxLength(255)
                     ->default(null),
@@ -84,6 +75,7 @@ class UserResource extends Resource
                     ->label(__('attributes.role'))
                     ->relationship('role', 'id')
                     ->exists('roles', 'id')
+                    ->notIn(Role::firstWhere('name', 'owner')->id)
                     ->live()
                     ->preload()
                     ->options(
