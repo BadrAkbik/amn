@@ -20,4 +20,9 @@ class Site extends Model
     {
         return $this->hasMany(Report::class);
     }
+
+    public function allowedUsers()
+    {
+        return $this->belongsToMany(User::class, 'permission_site_user', 'site_id', 'user_id')->withTimestamps();
+    }
 }

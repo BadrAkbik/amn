@@ -51,15 +51,11 @@ class User extends Authenticatable
         return $this->hasMany(Report::class, 'reporter_id');
     }
 
-    protected static function boot()
+    public function allowedSites()
     {
-        parent::boot();
-
-        static::creating(function ($user) {
-            $role_id = Role::firstOrCreate(['name' => 'user'])->id;
-            $user->role_id = $role_id;
-        });
+        return $this->belongsToMany(Site::class, 'permission_site_user', 'user_id', 'site_id')->withTimestamps();
     }
+
 
     public function hasPermission($permission)
     {

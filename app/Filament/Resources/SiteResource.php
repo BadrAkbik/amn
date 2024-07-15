@@ -4,8 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SiteResource\Pages;
 use App\Models\Site;
+use App\Models\User;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Form;
@@ -13,7 +15,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use PhpParser\Node\Stmt\Label;
 
 class SiteResource extends Resource
 {
@@ -50,9 +51,23 @@ class SiteResource extends Resource
                             ->label(__('attributes.address'))
                             ->required()
                             ->maxLength(255),
-
-                    ]),
+                    ])->columnSpan(2),
+                Section::make(__('attributes.add permissions to users to see this site'))
+                    ->schema([
+                        Select::make('allowedUser')
+                            ->label(__('attributes.choose users'))
+                            ->relationship('allowedUsers', 'email')
+                            ->options(
+                                User::whereNot('role_id', 1)->get()->mapWithKeys(function ($user) {
+                                    return [$user->id => $user->name . ' - ' . $user->email];
+                                })
+                            )
+                            ->multiple()
+                            ->preload()
+                            ->live()
+                    ])->columnSpan(1),
                 Section::make(__('attributes.add periods to site'))
+                    ->collapsible()
                     ->schema([
                         Repeater::make('periods')
                             ->label(__('attributes.periods'))
@@ -61,7 +76,8 @@ class SiteResource extends Resource
                                 TextInput::make('name')
                                     ->label(__('attributes.period_name'))
                                     ->nullable()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
                                 TimePicker::make('from')
                                     ->label(__('attributes.from'))
                                     ->required()
@@ -71,11 +87,14 @@ class SiteResource extends Resource
                                     ->required()
                                     ->seconds(false),
                             ])
-                            ->columns(1)
+                            ->columns(2)
                             ->defaultItems(3)
-                    ]),
+                            ->collapsed()
+                            ->addActionLabel(__('attributes.add period'))
+                    ])->columns(1)
+                    ->columnSpan(2),
 
-            ]);
+            ])->columns(3);
     }
 
     public static function table(Table $table): Table
@@ -102,6 +121,13 @@ class SiteResource extends Resource
             ->filters([
                 //
             ])
+            ->query(function (Site $site) {
+                if (!auth()->user()->hasPermission('sites.viewAll')) {
+                    return $site->whereRelation('allowedUsers', 'user_id', auth()->user()->id);
+                } else {
+                    return $site;
+                }
+            })
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

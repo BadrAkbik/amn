@@ -59,6 +59,9 @@ return [
     'reporter_name' => 'معد التقرير',
     'time' => 'الوقت',
     'state_description' => 'شرح الحالة',
-    'print' => 'طباعة'
+    'print' => 'طباعة',
+    'add period' => 'إضافة فترة',
+    'add permissions to users to see this site' => 'إضافة صلاحية للمستخدمين لرؤية هذا الموقع',
+    'choose users' => 'اختر مستخدمين'
 
 ];

@@ -69,6 +69,7 @@ class UserResource extends Resource
                 TextInput::make('phone_num')
                     ->label(__('attributes.phone_number'))
                     ->tel()
+                    ->unique(User::class, 'phone_num', ignoreRecord: true)
                     ->maxLength(255)
                     ->default(null),
                 Select::make('role_id')
