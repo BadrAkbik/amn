@@ -78,7 +78,7 @@ class ReportResource extends Resource
                         if (!auth()->user()->hasPermission('reports.create_to_all_sites')) {
                             return Site::whereRelation('WriteReportsPermissions', 'user_id', auth()->user()->id)->pluck('name', 'id');
                         } else {
-                            return Site::all()->pluck('name', 'name');
+                            return Site::all()->pluck('name', 'id');
                         }
                     })
                     ->getOptionLabelFromRecordUsing(fn (Site $record) => "{$record->name}"),
