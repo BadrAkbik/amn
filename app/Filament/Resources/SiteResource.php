@@ -54,9 +54,9 @@ class SiteResource extends Resource
                     ])->columnSpan(2),
                 Section::make(__('attributes.add permissions to users to see this site'))
                     ->schema([
-                        Select::make('allowedUser')
+                        Select::make('WatchPermissions')
                             ->label(__('attributes.choose users'))
-                            ->relationship('allowedUsers', 'email')
+                            ->relationship('WatchPermissions', 'email')
                             ->options(
                                 User::whereNot('role_id', 1)->get()->mapWithKeys(function ($user) {
                                     return [$user->id => $user->name . ' - ' . $user->email];
@@ -93,7 +93,20 @@ class SiteResource extends Resource
                             ->addActionLabel(__('attributes.add period'))
                     ])->columns(1)
                     ->columnSpan(2),
-
+                Section::make(__('attributes.add permissions to users to write reports to this site'))
+                    ->schema([
+                        Select::make('WriteReportsPermissions')
+                            ->label(__('attributes.choose users'))
+                            ->relationship('WriteReportsPermissions', 'email')
+                            ->options(
+                                User::whereNot('role_id', 1)->get()->mapWithKeys(function ($user) {
+                                    return [$user->id => $user->name . ' - ' . $user->email];
+                                })
+                            )
+                            ->multiple()
+                            ->preload()
+                            ->live()
+                    ])->columnSpan(1),
             ])->columns(3);
     }
 
@@ -123,13 +136,14 @@ class SiteResource extends Resource
             ])
             ->query(function (Site $site) {
                 if (!auth()->user()->hasPermission('sites.viewAll')) {
-                    return $site->whereRelation('allowedUsers', 'user_id', auth()->user()->id);
+                    return $site->whereRelation('WatchPermissions', 'user_id', auth()->user()->id);
                 } else {
                     return $site;
                 }
             })
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

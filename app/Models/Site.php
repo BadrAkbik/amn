@@ -21,8 +21,13 @@ class Site extends Model
         return $this->hasMany(Report::class);
     }
 
-    public function allowedUsers()
+    public function WatchPermissions()
     {
-        return $this->belongsToMany(User::class, 'permission_site_user', 'site_id', 'user_id')->withTimestamps();
+        return $this->belongsToMany(User::class, 'permission_site_watch', 'site_id', 'user_id')->withTimestamps();
+    }
+
+    public function WriteReportsPermissions()
+    {
+        return $this->belongsToMany(User::class, 'permission_report_write', 'site_id', 'user_id')->withTimestamps();
     }
 }

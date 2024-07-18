@@ -62,6 +62,7 @@ return [
     'print' => 'طباعة',
     'add period' => 'إضافة فترة',
     'add permissions to users to see this site' => 'إضافة صلاحية للمستخدمين لرؤية هذا الموقع',
-    'choose users' => 'اختر مستخدمين'
+    'choose users' => 'اختر مستخدمين',
+    'add permissions to users to write reports to this site' => 'إضافة صلاحية للمستخدمين لكتابة تقرير لهذا الموقع'
 
 ];

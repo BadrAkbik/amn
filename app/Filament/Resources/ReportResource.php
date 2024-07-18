@@ -10,6 +10,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -42,6 +43,11 @@ class ReportResource extends Resource
         return __('attributes.reports');
     }
 
+    public static function canEdit($record): bool
+    {
+        return ($record->reporter_id == auth()->user()->id && auth()->user()->hasPermission('report.own_update')) || auth()->user()->hasPermission('report.update');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -57,35 +63,31 @@ class ReportResource extends Resource
                     ->label(__('attributes.time'))
                     ->seconds(false)
                     ->required(),
-                Select::make('reporter_id')
-                    ->label(__('attributes.reporter_name'))
+                Select::make('period_id')
+                    ->label(__('attributes.period'))
                     ->required()
-                    ->relationship('reporter', 'id')
-                    ->exists('users', 'id')
-                    ->live()
-                    ->preload()
-                    ->getOptionLabelFromRecordUsing(fn (User $record) => "{$record->name}"),
-                    Select::make('period_id')
-                        ->label(__('attributes.period'))
-                        ->required()
-                        ->relationship('period', 'id')
-                        ->exists('periods', 'id')
-                        ->live()
-                        ->preload()
-                        ->getOptionLabelFromRecordUsing(fn (Period $record) => "{$record->name}, {$record->from}, {$record->to}"),
-                    Select::make('site_id')
-                        ->label(__('attributes.site'))
-                        ->required()
-                        ->relationship('site')
-                        ->exists('sites', 'id')
-                        ->live()
-                        ->preload()
-                        ->getOptionLabelFromRecordUsing(fn (Site $record) => "{$record->name}"),
+                    ->relationship('period', 'id')
+                    ->exists('periods', 'id')
+                    ->getOptionLabelFromRecordUsing(fn (Period $record) => "{$record->name}, {$record->from}, {$record->to}"),
+                Select::make('site_id')
+                    ->label(__('attributes.site'))
+                    ->required()
+                    ->relationship('site')
+                    ->exists('sites', 'id')
+                    ->options(function () {
+                        if (!auth()->user()->hasPermission('reports.create_to_all_sites')) {
+                            return Site::whereRelation('WriteReportsPermissions', 'user_id', auth()->user()->id)->pluck('name', 'id');
+                        } else {
+                            return Site::all()->pluck('name', 'name');
+                        }
+                    })
+                    ->getOptionLabelFromRecordUsing(fn (Site $record) => "{$record->name}"),
                 Textarea::make('state_description')
                     ->label(__('attributes.state_description'))
                     ->required()
                     ->rows(20)
                     ->columnSpanFull(),
+                Hidden::make('reporter_id')->default(auth()->user()->id)
             ]);
     }
 
@@ -130,6 +132,13 @@ class ReportResource extends Resource
             ->filters([
                 //
             ])
+            ->query(function (Report $report) {
+                if (!auth()->user()->hasPermission('reports.viewAll')) {
+                    return $report->where('reporter_id', auth()->user()->id);
+                } else {
+                    return $report;
+                }
+            })
             ->actions([
                 Tables\Actions\Action::make('print')
                     ->label(__('attributes.print'))
@@ -138,26 +147,6 @@ class ReportResource extends Resource
                     ->url(fn (Report $report) => route('print', $report))
                     ->visible(auth()->user()->hasPermission('report.print'))
                     ->openUrlInNewTab(),
-                /*                 Tables\Actions\Action::make('pdf')
-                    ->label('PDF')
-                    ->color('success')
-                    ->icon('heroicon-s-arrow-down-tray')
-                    ->action(function (Report $record) {
-                        return response()->streamDownload(function () use ($record) {
-                            return PDF::view('pdf', ['record' => $record])->save($record->site->name . '.pdf');
-                        });
-                    }), */
-                /* Tables\Actions\Action::make('pdf')
-                    ->label('PDF')
-                    ->color('success')
-                    ->icon('heroicon-s-arrow-down-tray')
-                    ->action(function (Report $record) {
-                        return response()->streamDownload(function () use ($record) {
-                            echo FacadePdf::loadHtml(
-                                Blade::render('pdf', ['record' => $record])
-                            )->stream();
-                        }, $record->site->name . '.pdf');
-                    }), */
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

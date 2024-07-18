@@ -51,9 +51,14 @@ class User extends Authenticatable
         return $this->hasMany(Report::class, 'reporter_id');
     }
 
-    public function allowedSites()
+    public function sitesWatchPermissions()
     {
-        return $this->belongsToMany(Site::class, 'permission_site_user', 'user_id', 'site_id')->withTimestamps();
+        return $this->belongsToMany(Site::class, 'permission_site_watch', 'user_id', 'site_id')->withPivot(['watch', 'write_reports'])->withTimestamps();
+    }
+
+    public function reportsWritePermissions()
+    {
+        return $this->belongsToMany(Site::class, 'permission_site_user', 'user_id', 'site_id')->withPivot(['watch', 'write_reports'])->withTimestamps();
     }
 
 
