@@ -21,7 +21,7 @@ class ReportPolicy
      */
     public function view(User $user, Report $report): bool
     {
-        return $user->hasPermission('reports.view');
+        return $user->hasPermission('report.view');
     }
 
     /**
