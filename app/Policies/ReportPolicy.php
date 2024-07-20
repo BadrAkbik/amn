@@ -29,7 +29,7 @@ class ReportPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermission('reports.create');
+        return $user->hasPermission('report.create');
     }
 
     /**
@@ -37,7 +37,7 @@ class ReportPolicy
      */
     public function update(User $user, Report $report): bool
     {
-        return $user->hasPermission('reports.update');
+        return $user->hasPermission('report.update');
     }
 
     /**
@@ -45,6 +45,6 @@ class ReportPolicy
      */
     public function delete(User $user, Report $report): bool
     {
-        return $user->hasPermission('reports.delete');
+        return $user->hasPermission('report.delete');
     }
 }
