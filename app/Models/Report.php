@@ -11,6 +11,10 @@ class Report extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'attachments' => 'array',
+    ];
+
     public function period()
     {
         return $this->belongsTo(Period::class, 'period_id');

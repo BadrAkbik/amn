@@ -30,7 +30,7 @@
         <div class="mb-4">
             <p class="block mb-5 font-bold">شرح الحالة:</p>
             <p class=" block w-full rounded-md">
-                {{ $report->state_description }}
+                {!! Str::markdown($report->state_description) !!}
             </p>
         </div>
         <div class="mb-2">

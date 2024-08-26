@@ -30,5 +30,7 @@ return [
     'Update your account\'s profile information and email address.' => 'Update your account\'s profile information and email address.',
     'profile_information' => 'profile information',
     'view' => 'view',
-    'year' => 'year'
+    'year' => 'year',
+    'attachments' => 'Attachments',
+    'attachments_view' => 'View attachments',
 ];

@@ -6,21 +6,21 @@ use App\Filament\Resources\ReportResource\Pages;
 use App\Models\Period;
 use App\Models\Report;
 use App\Models\Site;
-use App\Models\User;
-use Barryvdh\DomPDF\Facade\Pdf as FacadePdf;
-use Spatie\LaravelPdf\Facades\Pdf;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-
+use Illuminate\Support\Facades\Storage;
+use Filament\Tables\Actions\Action;
 
 class ReportResource extends Resource
 {
@@ -68,7 +68,7 @@ class ReportResource extends Resource
                     ->required()
                     ->relationship('period', 'id')
                     ->exists('periods', 'id')
-                    ->getOptionLabelFromRecordUsing(fn (Period $record) => "{$record->name}, {$record->from}, {$record->to}"),
+                    ->getOptionLabelFromRecordUsing(fn(Period $record) => "{$record->name}, {$record->from}, {$record->to}"),
                 Select::make('site_id')
                     ->label(__('attributes.site'))
                     ->required()
@@ -81,12 +81,31 @@ class ReportResource extends Resource
                             return Site::all()->pluck('name', 'id');
                         }
                     })
-                    ->getOptionLabelFromRecordUsing(fn (Site $record) => "{$record->name}"),
-                Textarea::make('state_description')
+                    ->getOptionLabelFromRecordUsing(fn(Site $record) => "{$record->name}"),
+                MarkdownEditor::make('state_description')
                     ->label(__('attributes.state_description'))
+                    ->disableToolbarButtons([
+                        'attachFiles',
+                    ])
                     ->required()
-                    ->rows(20)
                     ->columnSpanFull(),
+                FileUpload::make('attachments')
+                    ->label(__('attributes.attachments'))
+                    ->multiple()
+                    ->disk('public')
+                    ->directory('attachments')
+                    ->maxFiles(7)
+                    ->acceptedFileTypes([
+                        'image/*',
+                        'video/mp4',
+                        'video/avi',
+                        'video/mpeg',
+                        'video/quicktime',
+                    ])
+                    ->openable()
+                    ->previewable()
+                    ->downloadable()
+                    ->reorderable(),
                 Hidden::make('reporter_id')->default(auth()->user()->id)
             ]);
     }
@@ -144,10 +163,23 @@ class ReportResource extends Resource
                     ->label(__('attributes.print'))
                     ->color('success')
                     ->icon('heroicon-o-printer')
-                    ->url(fn (Report $report) => route('print', $report))
+                    ->url(fn(Report $report) => route('print', $report))
                     ->visible(auth()->user()->hasPermission('report.print'))
                     ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
+                Action::make('viewAttachments')
+                    ->label(__('attributes.attachments_view'))
+                    ->icon('heroicon-o-paper-clip')
+                    ->color('gray')
+                    ->modalHeading(__('attributes.attachments'))
+                    ->modalWidth(MaxWidth::FourExtraLarge)
+                    ->modalSubmitAction(false)
+                    ->modalContent(function ($record) {
+                        $attachments = $record->attachments;
+                        if ($attachments) {
+                            return view('components.attachment-viewer', compact('attachments'));
+                        }
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
