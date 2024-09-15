@@ -14,7 +14,7 @@ Route::get('/print/{report}', function ($report) {
     $date = $report->date;
     $time = \Carbon\Carbon::parse($report->time)->format('g:i A');
     $description = $report->state_description;
-    $reporter = $report->reporter->name;
+    $reporter = $report->reporter?->name;
 
     return view('print', compact('day', 'date', 'time', 'reporter', 'description'));
 })->middleware(['auth', 'throttle:60,1'])->name('print');
