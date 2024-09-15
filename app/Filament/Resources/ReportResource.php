@@ -54,13 +54,16 @@ class ReportResource extends Resource
             ->schema([
                 TextInput::make('name')
                     ->label(__('attributes.name'))
+                    ->string()
                     ->maxLength(255)
                     ->default(null),
                 DatePicker::make('date')
                     ->label(__('attributes.date'))
+                    ->date()
                     ->required(),
                 TimePicker::make('time')
                     ->label(__('attributes.time'))
+                    ->time()
                     ->seconds(false)
                     ->required(),
                 Select::make('period_id')
@@ -83,6 +86,7 @@ class ReportResource extends Resource
                     })
                     ->getOptionLabelFromRecordUsing(fn(Site $record) => "{$record->name}"),
                 MarkdownEditor::make('state_description')
+                    ->string()
                     ->label(__('attributes.state_description'))
                     ->disableToolbarButtons([
                         'attachFiles',
@@ -176,7 +180,7 @@ class ReportResource extends Resource
                     ->modalSubmitAction(false)
                     ->modalContent(function ($record) {
                         $attachments = $record->attachments;
-                        if ($attachments) {
+                        if (!empty($attachments)) {
                             return view('components.attachment-viewer', compact('attachments'));
                         }
                     }),

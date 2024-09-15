@@ -55,22 +55,19 @@ class RoleResource extends Resource
             ->schema([
                 TextInput::make('name')
                     ->label(__('attributes.role'))
+                    ->string()
                     ->required()
                     ->unique()
                     ->hiddenOn('edit')
                     ->maxLength(255),
                 Select::make('permissions')
                     ->label(__('attributes.permissions'))
-                    ->relationship('permissions', 'id')
+                    ->relationship('permissions', 'name')
                     ->multiple()
                     ->live()
                     ->preload()
                     ->exists('permissions', 'id')
-                    ->options(
-                        Permission::all()->mapWithKeys(function ($permission) {
-                            return [$permission->id => $permission->name . ' - ' . $permission->name_ar];
-                        })
-                    )
+                    ->getOptionLabelFromRecordUsing(fn (Permission $record) => "{$record->name} - {$record->name_ar}")
                     ->searchable(),
             ]);
     }

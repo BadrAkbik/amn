@@ -45,24 +45,26 @@ class PeriodResource extends Resource
             ->schema([
                 TextInput::make('name')
                     ->maxLength(255)
+                    ->string()
                     ->label(__('attributes.name'))
                     ->default(null),
                 TimePicker::make('from')
                     ->label(__('attributes.from'))
+                    ->time()
                     ->required()
                     ->seconds(false),
                 TimePicker::make('to')
                     ->label(__('attributes.to'))
+                    ->time()
                     ->required()
                     ->seconds(false),
                     Select::make('site_id')
                     ->label(__('attributes.site'))
                     ->required()
-                    ->relationship('site')
+                    ->relationship('site', 'name')
                     ->exists('sites', 'id')
                     ->live()
                     ->preload()
-                    ->getOptionLabelFromRecordUsing(fn (Site $record) => "{$record->name}")
             ]);
     }
 

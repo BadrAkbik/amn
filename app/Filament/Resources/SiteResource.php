@@ -45,10 +45,12 @@ class SiteResource extends Resource
                     ->schema([
                         TextInput::make('name')
                             ->label(__('attributes.site_name'))
+                            ->string()
                             ->required()
                             ->maxLength(255),
                         TextInput::make('address')
                             ->label(__('attributes.address'))
+                            ->string()
                             ->required()
                             ->maxLength(255),
                     ])->columnSpan(2),
@@ -56,12 +58,13 @@ class SiteResource extends Resource
                     ->schema([
                         Select::make('WatchPermissions')
                             ->label(__('attributes.choose users'))
-                            ->relationship('WatchPermissions', 'email')
-                            ->options(
-                                User::whereNot('role_id', 1)->get()->mapWithKeys(function ($user) {
-                                    return [$user->id => $user->name . ' - ' . $user->email];
-                                })
+                            ->relationship(
+                                'WatchPermissions',
+                                'email',
+                                fn($query) => $query->whereHas('role', fn($query) => $query->whereNot('name', 'owner'))
                             )
+                            ->getOptionLabelFromRecordUsing(fn(User $record) => "{$record->name} - {$record->email}")
+                            ->exists('users', 'id')
                             ->multiple()
                             ->preload()
                             ->live()
@@ -74,15 +77,18 @@ class SiteResource extends Resource
                             ->relationship('periods')
                             ->schema([
                                 TextInput::make('name')
+                                    ->string()
                                     ->label(__('attributes.period_name'))
                                     ->nullable()
                                     ->maxLength(255)
                                     ->columnSpanFull(),
                                 TimePicker::make('from')
+                                    ->time()
                                     ->label(__('attributes.from'))
                                     ->required()
                                     ->seconds(false),
                                 TimePicker::make('to')
+                                    ->time()
                                     ->label(__('attributes.to'))
                                     ->required()
                                     ->seconds(false),
@@ -97,12 +103,13 @@ class SiteResource extends Resource
                     ->schema([
                         Select::make('WriteReportsPermissions')
                             ->label(__('attributes.choose users'))
-                            ->relationship('WriteReportsPermissions', 'email')
-                            ->options(
-                                User::whereNot('role_id', 1)->get()->mapWithKeys(function ($user) {
-                                    return [$user->id => $user->name . ' - ' . $user->email];
-                                })
+                            ->relationship(
+                                'WriteReportsPermissions',
+                                'email',
+                                fn($query) => $query->whereHas('role', fn($query) => $query->whereNot('name', 'owner'))
                             )
+                            ->getOptionLabelFromRecordUsing(fn(User $record) => "{$record->name} - {$record->email}")
+                            ->exists('users', 'id')
                             ->multiple()
                             ->preload()
                             ->live()

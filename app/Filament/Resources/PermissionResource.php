@@ -40,13 +40,12 @@ class PermissionResource extends Resource
             ->schema([
                 Select::make('roles')
                     ->label(__('attributes.roles'))
-                    ->relationship('roles', 'id')
+                    ->relationship('roles', 'name', fn ($query) => $query->whereNot('name', 'owner'))
                     ->multiple()
                     ->live()
                     ->notIn(Role::firstWhere('name', 'owner')->id)
                     ->preload()
                     ->exists('roles', 'id')
-                    ->options(Role::whereNot('name', 'owner')->pluck('name', 'id'))
                     ->searchable(),
             ]);
     }
