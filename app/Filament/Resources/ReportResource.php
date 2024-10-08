@@ -14,6 +14,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
@@ -65,17 +66,15 @@ class ReportResource extends Resource
                     ->time()
                     ->seconds(false)
                     ->required(),
-                Select::make('period_id')
-                    ->label(__('attributes.period'))
-                    ->required()
-                    ->relationship('period', 'id')
-                    ->exists('periods', 'id')
-                    ->getOptionLabelFromRecordUsing(fn(Period $record) => "{$record->name}, {$record->from}, {$record->to}"),
                 Select::make('site_id')
                     ->label(__('attributes.site'))
                     ->required()
+                    ->live()
                     ->relationship('site')
                     ->exists('sites', 'id')
+                    ->afterStateUpdated(function (callable $set, $state) {
+                        $set('period_id', null);
+                    })
                     ->options(function () {
                         if (!auth()->user()->hasPermission('reports.create_to_all_sites')) {
                             return Site::whereRelation('WriteReportsPermissions', 'user_id', auth()->user()->id)->pluck('name', 'id');
@@ -83,7 +82,19 @@ class ReportResource extends Resource
                             return Site::all()->pluck('name', 'id');
                         }
                     })
+                    ->searchable()
                     ->getOptionLabelFromRecordUsing(fn(Site $record) => "{$record->name}"),
+                Select::make('period_id')
+                    ->label(__('attributes.period'))
+                    ->required()
+                    ->relationship('period', 'id', function($query, Get $get){
+                        $query->where('site_id', $get('site_id'));
+                    })
+                    ->exists('periods', 'id')
+                    ->getOptionLabelFromRecordUsing(fn(Period $record) => "{$record->name}, {$record->from}, {$record->to}")
+                    ->live()
+                    ->preload()
+                    ->disabled(fn(Get $get) => $get('site_id') ? false : true),
                 MarkdownEditor::make('state_description')
                     ->string()
                     ->label(__('attributes.state_description'))
