@@ -9,13 +9,13 @@ class ModifyReportsTableNullableAndNullOnDelete extends Migration
     {
         Schema::table('reports', function (Blueprint $table) {
             // First, drop the existing foreign keys
-            $table->dropConstrainedForeignId('period_id');
-            $table->dropConstrainedForeignId('site_id');
-            $table->dropConstrainedForeignId('reporter_id');
+            $table->dropForeign(['period_id']);
+            $table->dropForeign(['site_id']);
+            $table->dropForeign(['reporter_id']);
 
-            $table->foreignId('period_id')->nullable()->constrained('periods')->nullOnDelete()->change();
-            $table->foreignId('site_id')->nullable()->constrained('sites')->nullOnDelete()->change();
-            $table->foreignId('reporter_id')->nullable()->constrained('users', 'id')->nullOnDelete()->change();
+            $table->foreignId('period_id')->nullable()->change()->constrained('periods')->nullOnDelete();
+            $table->foreignId('site_id')->nullable()->change()->constrained('sites')->nullOnDelete();
+            $table->foreignId('reporter_id')->nullable()->change()->constrained('users', 'id')->nullOnDelete();
         });
     }
 
@@ -26,9 +26,9 @@ class ModifyReportsTableNullableAndNullOnDelete extends Migration
             $table->dropForeign(['site_id']);
             $table->dropForeign(['reporter_id']);
 
-            $table->foreignId('period_id')->constrained('periods')->cascadeOnDelete()->change();
-            $table->foreignId('site_id')->constrained('sites')->cascadeOnDelete()->change();
-            $table->foreignId('reporter_id')->constrained('users', 'id')->cascadeOnDelete()->change();
+            $table->foreignId('period_id')->change()->constrained('periods')->cascadeOnDelete();
+            $table->foreignId('site_id')->change()->constrained('sites')->cascadeOnDelete();
+            $table->foreignId('reporter_id')->change()->constrained('users', 'id')->cascadeOnDelete();
         });
     }
 }
